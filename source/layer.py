@@ -15,8 +15,12 @@ class LAYERS:
             raise ValueError("length of input does'nt match!!!")
         
         output=[]
+        
+        
         for i in range(len(self.main_nodes)):
             output_node=self.main_nodes[i].calculate_val(input)
             output.append(output_node)
         self.output=output
+        
+        
         return output
