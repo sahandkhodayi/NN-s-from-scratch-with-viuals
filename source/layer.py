@@ -3,7 +3,7 @@ from neuron import NEURAL as node
 
 class LAYERS:
 
-    def __init__(self,nodes:list[node],num_nodes:int=0,num_input:int=0)->None:
+    def __init__(self,nodes:list[node],num_input)->None:
         self.main_nodes=nodes
         self.output=None
         self.num_inputs=num_input
