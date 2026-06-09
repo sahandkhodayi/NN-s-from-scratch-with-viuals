@@ -2,21 +2,27 @@ import numpy as np
 
 
 
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
 
 def relu(x):
     return np.maximum(0, x)
 
+
 def leaky_relu(x):
     return np.where(x > 0, x, 0.01 * x)
+
 
 def tanh(x):
     return np.tanh(x)
 
+
 def softmax(x):
     exp_x = np.exp(x - np.max(x))
     return exp_x / np.sum(exp_x)
+
 
 ACTIVATIONS = {
     "sigmoid": sigmoid,
@@ -28,7 +34,7 @@ ACTIVATIONS = {
 
 
 
-class Neural:
+class NEURAL:
 
     def __init__(self,number_of_last_conects,bias=0,weight=None,activation=None):
 
