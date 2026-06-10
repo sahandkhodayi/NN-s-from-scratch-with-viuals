@@ -6,6 +6,7 @@ class MSE:
 
     def __init__(self):
         self.loss=None
+        self.grad=None
 
 
     def forward(self,Y_true:list,Y_predict:list):
@@ -19,8 +20,19 @@ class MSE:
         self.loss=loss
         return loss
     
-    def backward():
-        ...
+    def backward(self,Y_true:list,Y_predict:list):
+
+        grad=[]
+
+        for i in range(len(Y_predict)):
+
+            grad.append(-2*(Y_true[i]-Y_predict[i]))
+
+        output=(1/len(Y_predict))*sum(grad)
+        self.grad=output
+        return output
+
+        
 
 
             
