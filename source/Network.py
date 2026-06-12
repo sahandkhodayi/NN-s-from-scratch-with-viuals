@@ -18,5 +18,15 @@ class Network:
         self.output=output
         return output    
 
+    def backward(self, loss_grads: list):
+        """
+        loss_grads : per-output gradient list from loss.backward()
+        Runs backprop through all layers in reverse order.
+        """
+        grad = loss_grads
+        for layer in reversed(self.layers):
+            grad = layer.backward(grad)
+
+
                 
                 

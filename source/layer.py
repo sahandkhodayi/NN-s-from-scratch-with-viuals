@@ -24,3 +24,23 @@ class LAYERS:
         
         
         return output
+
+    def backward(self, grads_from_next: list) -> list:
+        """
+        grads_from_next : list of gradients, one per neuron in THIS layer
+                          (comes from the next layer or from the loss)
+        Returns a list of gradients for the PREVIOUS layer's outputs.
+        """
+        # Each neuron returns a d_input list (one value per input feature).
+        # We sum them up across all neurons to get the full gradient
+        # that flows back to the previous layer.
+
+        num_inputs = self.num_inputs
+        grad_to_prev = [0.0] * num_inputs
+
+        for i, neuron in enumerate(self.main_nodes):
+            d_input = neuron.backward(grads_from_next[i])
+            for j in range(num_inputs):
+                grad_to_prev[j] += d_input[j]
+
+        return grad_to_prev

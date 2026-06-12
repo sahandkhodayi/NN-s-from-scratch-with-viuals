@@ -51,8 +51,8 @@ class NEURAL:
         if self.num!=len(self.weight):
             raise ValueError("length of weight does'nt match the number of inputs")
         
-        val=input@self.weight + self.bias
-        self.last_input=input
+        val=np.dot(input, self.weight) + self.bias
+        self.last_input=list(input)
         self.z=val
         val=self.activate(val)
         self.output=val
@@ -66,4 +66,27 @@ class NEURAL:
         else:
             self.activation=None
             return z
-        
+
+    def backward(self, grad_from_next):
+        """
+        grad_from_next : scalar gradient arriving from the next layer (dLoss/dOutput)
+        Returns dLoss/dInput (list) to pass back to the previous layer.
+        """
+        from derivative import DERIVATIVES
+
+        # 1. Multiply by activation derivative to get delta
+        if self.activation in DERIVATIVES:
+            act_deriv = DERIVATIVES[self.activation](self.output)
+        else:
+            act_deriv = 1  # linear / no activation → derivative is 1
+
+        delta = grad_from_next * act_deriv   # dLoss/dZ
+
+        # 2. Gradients for weights and bias
+        self.dW = [delta * xi for xi in self.last_input]  # dLoss/dW
+        self.dB = delta                                     # dLoss/dB
+
+        # 3. Gradient to pass back to previous layer (dLoss/dInput per input)
+        d_input = [delta * w for w in self.weight]
+        return d_input
+
