@@ -1,3 +1,4 @@
+# 🚧 SHUTDOWN FOR A SHORT period.🚧
 # 🧠 Neural Networks From Scratch with Visuals
 
 A deep dive into neural networks built entirely from scratch using NumPy, with a strong focus on visualization, mathematical intuition, and understanding how learning actually happens.
