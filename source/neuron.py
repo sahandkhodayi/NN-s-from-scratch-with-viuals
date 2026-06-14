@@ -39,7 +39,7 @@ class NEURAL:
     def __init__(self,number_of_last_conects,bias=0,weight=None,activation=None):
 
         self.num=number_of_last_conects
-        self.weight=weight
+        self.weight = weight if weight is not None else (np.random.randn(number_of_last_conects) * np.sqrt(2.0 / number_of_last_conects)).tolist()
         self.bias=bias
         self.last_input=None
         self.output=None
@@ -89,4 +89,3 @@ class NEURAL:
         # 3. Gradient to pass back to previous layer (dLoss/dInput per input)
         d_input = [delta * w for w in self.weight]
         return d_input
-

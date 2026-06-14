@@ -1,10 +1,11 @@
 import sys, math, random, threading, time
 sys.path.insert(0, '/home/claude')
+from PyQt6.QtCore import QPoint
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QLabel, QPushButton, QSlider, QComboBox, QFrame, QSizePolicy,
-    QButtonGroup, QGridLayout, QSpinBox
+    QButtonGroup, QGridLayout, QSpinBox, QLineEdit, QScrollArea, QDialog
 )
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal, QPointF, QRectF
 from PyQt6.QtGui import (
@@ -94,19 +95,22 @@ QFrame[frameShape="4"], QFrame[frameShape="5"] { color: #232838; }
 
 # ── Network Canvas ─────────────────────────────────────────────────────────────
 class NetworkCanvas(QWidget):
-    layer_changed = pyqtSignal(int, int)   # layer_idx, delta (+1/-1)
-    layer_removed = pyqtSignal(int)
-    layer_added   = pyqtSignal(int)        # insert before index
+    layer_changed  = pyqtSignal(int, int)
+    layer_removed  = pyqtSignal(int)
+    layer_added    = pyqtSignal(int)
+    neuron_clicked = pyqtSignal(int, int)   # layer_idx, neuron_idx
 
     def __init__(self):
         super().__init__()
-        self.network     = None
-        self.layer_sizes = [4, 4, 1]
+        self.network       = None
+        self.layer_sizes   = [4, 4, 1]
         self.setMinimumWidth(360)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setMouseTracking(True)
-        self._hover_layer = -1
-        self._positions   = []   # [layer][neuron] = (x,y)
+        self._hover_layer  = -1
+        self._hover_neuron = (-1, -1)
+        self._sel_neuron   = (-1, -1)
+        self._positions    = []
 
     def set_network(self, net, sizes):
         self.network     = net
@@ -179,7 +183,19 @@ class NetworkCanvas(QWidget):
                     if v is not None: val = max(0, min(1, float(v)))
                 except: pass
 
-                # glow
+                is_sel   = self._sel_neuron   == (li, ni)
+                is_hover = self._hover_neuron == (li, ni)
+
+                # outer glow ring for selected
+                if is_sel:
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    p.setPen(QPen(QColor(255,220,80,180), 2.5))
+                    p.drawEllipse(cx-18, cy-18, 36, 36)
+                elif is_hover:
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    p.setPen(QPen(QColor(180,220,255,120), 1.5))
+                    p.drawEllipse(cx-17, cy-17, 34, 34)
+
                 grad = QRadialGradient(cx, cy, 18)
                 r = int(C_NEURON.red()   + val*(C_ACCENT.red()  -C_NEURON.red()))
                 g = int(C_NEURON.green() + val*(C_ACCENT.green()-C_NEURON.green()))
@@ -187,7 +203,8 @@ class NetworkCanvas(QWidget):
                 grad.setColorAt(0, QColor(r,g,b,230))
                 grad.setColorAt(1, QColor(r,g,b,60))
                 p.setBrush(QBrush(grad))
-                p.setPen(QPen(C_ACCENT, 1.5))
+                outline_col = QColor(255,220,80) if is_sel else C_ACCENT
+                p.setPen(QPen(outline_col, 2 if is_sel else 1.5))
                 p.drawEllipse(cx-13, cy-13, 26, 26)
 
             # hover: show +/- buttons
@@ -212,40 +229,231 @@ class NetworkCanvas(QWidget):
         p.setPen(C_DIM)
 
     def mouseMoveEvent(self, e):
-        pos   = self._positions
-        mx    = e.position().x()
-        hover = -1
+        pos    = self._positions
+        mx, my = e.position().x(), e.position().y()
+        hover_layer  = -1
+        hover_neuron = (-1, -1)
         for li, lpos in enumerate(pos):
             if lpos:
                 cx = lpos[0][0]
                 if abs(mx - cx) < 30:
-                    hover = li
-                    break
-        if hover != self._hover_layer:
-            self._hover_layer = hover
+                    hover_layer = li
+                for ni, (cx, cy) in enumerate(lpos):
+                    if math.sqrt((mx-cx)**2 + (my-cy)**2) < 15:
+                        hover_neuron = (li, ni)
+        changed = (hover_layer != self._hover_layer) or (hover_neuron != self._hover_neuron)
+        self._hover_layer  = hover_layer
+        self._hover_neuron = hover_neuron
+        if changed:
+            self.setCursor(Qt.CursorShape.PointingHandCursor if hover_neuron != (-1,-1) else Qt.CursorShape.ArrowCursor)
             self.update()
 
     def leaveEvent(self, _):
-        self._hover_layer = -1
+        self._hover_layer  = -1
+        self._hover_neuron = (-1, -1)
         self.update()
 
     def mousePressEvent(self, e):
-        pos = self._positions
+        pos    = self._positions
         mx, my = e.position().x(), e.position().y()
-        H = self.height()
+        H      = self.height()
+
+        # check neuron click first
+        for li, lpos in enumerate(pos):
+            for ni, (cx, cy) in enumerate(lpos):
+                if math.sqrt((mx-cx)**2 + (my-cy)**2) < 15:
+                    if self._sel_neuron == (li, ni):
+                        self._sel_neuron = (-1, -1)   # deselect on re-click
+                    else:
+                        self._sel_neuron = (li, ni)
+                        self.neuron_clicked.emit(li, ni)
+                    self.update()
+                    return
+
+        # layer +/- buttons
         for li, lpos in enumerate(pos):
             if not lpos: continue
             cx = lpos[0][0]
             if abs(mx - cx) < 14:
-                # plus button
                 if 48 <= my <= 70:
                     self.layer_changed.emit(li, 1)
                     return
-                # minus button
                 if H-52 <= my <= H-30:
                     self.layer_changed.emit(li, -1)
                     return
 
+
+
+# ── Neuron Info Panel ─────────────────────────────────────────────────────────
+class NeuronInfoPanel(QWidget):
+    """Floating panel shown when a neuron is clicked."""
+
+    apply_clicked = pyqtSignal(int, int, list, float)  # layer, neuron, weights, bias
+
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet("""
+            QWidget { background: #1a1e30; border-radius: 10px; }
+            QLabel  { background: transparent; color: #c8d2e6; }
+            QLineEdit {
+                background: #0f111a; border: 1px solid #3a4060;
+                border-radius: 5px; padding: 3px 6px; color: #c8d2e6;
+            }
+            QLineEdit:focus { border: 1px solid #63b3ed; }
+            QPushButton {
+                border-radius: 6px; padding: 4px 10px;
+                font-weight: bold; color: white;
+            }
+        """)
+        self.setFixedWidth(240)
+        self.hide()
+
+        self._layer_idx  = -1
+        self._neuron_idx = -1
+        self._network    = None
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(12, 12, 12, 12)
+        lay.setSpacing(8)
+
+        # header
+        hdr = QHBoxLayout()
+        self.title_lbl = QLabel("Neuron")
+        self.title_lbl.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        self.title_lbl.setStyleSheet("color:#63b3ed;")
+        close_btn = QPushButton("✕")
+        close_btn.setFixedSize(22, 22)
+        close_btn.setStyleSheet("background:#2d3250; border-radius:11px; padding:0;")
+        close_btn.clicked.connect(self.hide)
+        hdr.addWidget(self.title_lbl)
+        hdr.addStretch()
+        hdr.addWidget(close_btn)
+        lay.addLayout(hdr)
+
+        # output
+        out_row = QHBoxLayout()
+        out_row.addWidget(QLabel("Output:"))
+        self.output_lbl = QLabel("—")
+        self.output_lbl.setStyleSheet("color:#9a75ea; font-weight:bold;")
+        out_row.addWidget(self.output_lbl)
+        out_row.addStretch()
+        self.act_lbl = QLabel("")
+        self.act_lbl.setStyleSheet("color:#505a72; font-size:10px;")
+        out_row.addWidget(self.act_lbl)
+        lay.addLayout(out_row)
+
+        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color:#2d3250;"); lay.addWidget(sep)
+
+        # bias
+        bias_row = QHBoxLayout()
+        bias_row.addWidget(QLabel("Bias:"))
+        self.bias_edit = QLineEdit()
+        self.bias_edit.setFixedWidth(90)
+        bias_row.addStretch()
+        bias_row.addWidget(self.bias_edit)
+        lay.addLayout(bias_row)
+
+        sep2 = QFrame(); sep2.setFrameShape(QFrame.Shape.HLine)
+        sep2.setStyleSheet("color:#2d3250;"); lay.addWidget(sep2)
+
+        # weights scroll area
+        wlbl = QLabel("Weights:")
+        wlbl.setStyleSheet("color:#505a72; font-size:10px; font-weight:bold;")
+        lay.addWidget(wlbl)
+
+        self.weights_container = QWidget()
+        self.weights_container.setStyleSheet("background:transparent;")
+        self.weights_lay = QVBoxLayout(self.weights_container)
+        self.weights_lay.setSpacing(4)
+        self.weights_lay.setContentsMargins(0,0,0,0)
+
+        scroll = QScrollArea()
+        scroll.setWidget(self.weights_container)
+        scroll.setWidgetResizable(True)
+        scroll.setFixedHeight(120)
+        scroll.setStyleSheet("QScrollArea { border:none; background:transparent; }")
+        lay.addWidget(scroll)
+
+        # apply button
+        self.apply_btn = QPushButton("Apply Changes")
+        self.apply_btn.setStyleSheet("background:#2b4a6f;")
+        self.apply_btn.clicked.connect(self._apply)
+        lay.addWidget(self.apply_btn)
+
+        self._weight_edits = []
+
+    def show_neuron(self, network, layer_idx, neuron_idx, canvas_pos):
+        self._network    = network
+        self._layer_idx  = layer_idx
+        self._neuron_idx = neuron_idx
+
+        neuron = network.layers[layer_idx].main_nodes[neuron_idx]
+        lname  = "Input" if layer_idx==0 else ("Output" if layer_idx==len(network.layers)-1 else f"Hidden {layer_idx}")
+        self.title_lbl.setText(f"{lname}  ·  Neuron {neuron_idx+1}")
+        self.act_lbl.setText(str(neuron.activation or "linear"))
+
+        out = neuron.output
+        self.output_lbl.setText(f"{out:.4f}" if out is not None else "—")
+        self.bias_edit.setText(f"{neuron.bias:.6f}")
+
+        # rebuild weight fields
+        while self.weights_lay.count():
+            w = self.weights_lay.takeAt(0).widget()
+            if w: w.deleteLater()
+        self._weight_edits = []
+
+        for i, w in enumerate(neuron.weight):
+            row = QHBoxLayout()
+            lbl = QLabel(f"w{i}:")
+            lbl.setFixedWidth(28)
+            lbl.setStyleSheet("color:#505a72;")
+            edit = QLineEdit(f"{w:.6f}")
+            row.addWidget(lbl)
+            row.addWidget(edit)
+            self._weight_edits.append(edit)
+            container = QWidget(); container.setStyleSheet("background:transparent;")
+            container.setLayout(row)
+            self.weights_lay.addWidget(container)
+
+        # position near the canvas click
+        self.adjustSize()
+        px = canvas_pos.x() + 20
+        py = canvas_pos.y() - self.height() // 2
+        # keep on screen
+        if parent := self.parent():
+            pw, ph = parent.width(), parent.height()
+            px = min(px, pw - self.width() - 10)
+            py = max(10, min(py, ph - self.height() - 10))
+        self.move(int(px), int(py))
+        self.show()
+        self.raise_()
+
+    def refresh_output(self, network):
+        """Call each tick to update the live output value."""
+        if not self.isVisible() or self._layer_idx < 0:
+            return
+        try:
+            neuron = network.layers[self._layer_idx].main_nodes[self._neuron_idx]
+            out    = neuron.output
+            self.output_lbl.setText(f"{out:.4f}" if out is not None else "—")
+        except: pass
+
+    def _apply(self):
+        if self._network is None or self._layer_idx < 0:
+            return
+        neuron = self._network.layers[self._layer_idx].main_nodes[self._neuron_idx]
+        try:
+            new_weights = [float(e.text()) for e in self._weight_edits]
+            new_bias    = float(self.bias_edit.text())
+            neuron.weight = new_weights
+            neuron.bias   = new_bias
+            self.apply_btn.setStyleSheet("background:#276749;")
+            QTimer.singleShot(600, lambda: self.apply_btn.setStyleSheet("background:#2b4a6f;"))
+        except ValueError:
+            self.apply_btn.setStyleSheet("background:#742a2a;")
+            QTimer.singleShot(600, lambda: self.apply_btn.setStyleSheet("background:#2b4a6f;"))
 
 # ── Decision Boundary Canvas ──────────────────────────────────────────────────
 GRID = 50
@@ -434,7 +642,11 @@ class MainWindow(QMainWindow):
         # ── Left: network ──
         self.net_canvas = NetworkCanvas()
         self.net_canvas.layer_changed.connect(self._on_layer_changed)
+        self.net_canvas.neuron_clicked.connect(self._on_neuron_clicked)
         main.addWidget(self.net_canvas, 3)
+
+        # neuron info panel (floats over canvas)
+        self.neuron_panel = NeuronInfoPanel(self)
 
         sep1 = QFrame(); sep1.setFrameShape(QFrame.Shape.VLine); main.addWidget(sep1)
 
@@ -657,6 +869,9 @@ class MainWindow(QMainWindow):
 
     def _refresh_network(self):
         self._pause_training()
+        if hasattr(self, 'neuron_panel'):
+            self.neuron_panel.hide()
+        self.net_canvas._sel_neuron = (-1, -1)
         self.network  = build_network(self.layer_sizes, self.activation)
         self.loss_fn  = MSE()
         self.trainer  = None
@@ -684,6 +899,22 @@ class MainWindow(QMainWindow):
     def _reset(self):
         self._refresh_network()
 
+    def _on_neuron_clicked(self, li, ni):
+
+        x, y = self.net_canvas._positions[li][ni]
+
+        canvas_global = self.net_canvas.mapToGlobal(
+            QPoint(int(x), int(y))
+        )
+
+        local_pos = self.mapFromGlobal(canvas_global)
+
+        self.neuron_panel.show_neuron(
+            self.network,
+            li,
+            ni,
+            local_pos
+        )
     def _on_step(self, loss, epoch):
         self.loss_graph.add(loss)
         self.epoch_lbl.setText(f"Epoch: {epoch}  |  Loss: {loss:.4f}")
@@ -692,6 +923,7 @@ class MainWindow(QMainWindow):
         if self.worker and self.worker.isRunning():
             self.boundary.recompute()
         self.net_canvas.update()
+        self.neuron_panel.refresh_output(self.network)
 
     def closeEvent(self, e):
         self._pause_training()
