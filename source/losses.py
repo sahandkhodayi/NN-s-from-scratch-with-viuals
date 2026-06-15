@@ -21,8 +21,7 @@ class MSE:
         return loss
     
     def backward(self,Y_true:list,Y_predict:list):
-        # Return a list of per-output gradients (one per output neuron)
-        # instead of a single scalar, so each neuron gets its own signal
+
         grad=[]
 
         for i in range(len(Y_predict)):
