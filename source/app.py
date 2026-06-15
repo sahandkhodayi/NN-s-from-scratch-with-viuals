@@ -1134,4 +1134,3 @@ if __name__ == "__main__":
     app.setStyle("Fusion")
     win = MainWindow()
     win.show()
-    sys.exit(app.exec())
