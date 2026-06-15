@@ -31,6 +31,16 @@ class Trainer:
 
         return loss
 
+    def train_epoch(self, X_data: list, Y_data: list):
+        """Run one full pass over the dataset, with shuffling."""
+        import random
+        pairs = list(zip(X_data, Y_data))
+        random.shuffle(pairs)
+        total_loss = 0.0
+        for X, Y in pairs:
+            total_loss += self.step(X, Y)
+        return total_loss / len(pairs)
+
     def train(self, X_data: list, Y_data: list, epochs: int = 100, verbose: bool = True):
         """Train over a dataset for a number of epochs."""
         for epoch in range(1, epochs + 1):
