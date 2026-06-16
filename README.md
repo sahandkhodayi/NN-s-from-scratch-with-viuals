@@ -91,7 +91,7 @@ py main.py
 ```
 ---
 
-#📂 Project Structure
+# 📂 Project Structure
 
 src/
 ├── neuron.py
@@ -101,7 +101,9 @@ src/
 ├── derivative.py
 ├── BackPropagation.py
 └── app.py
+
 ---
+
 #⚙️ How It Works
 #1. Forward Propagation:
 ![forward]()
