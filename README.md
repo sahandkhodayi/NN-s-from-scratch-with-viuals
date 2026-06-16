@@ -104,25 +104,25 @@ src/
 
 ---
 
-#⚙️ How It Works
+# ⚙️ How It Works
 #1. Forward Propagation:
 ![forward]()
 
-#📉 Loss Calculation
+# 📉 Loss Calculation
 ![forward]()
 
-#🔁 Backpropagation
+# 🔁 Backpropagation
 ![forward]()
 
-#📈 Gradient Descent
+# 📈 Gradient Descent
 ![forward]()
 
 ---
-#📚 Mathematics Notes
+# 📚 Mathematics Notes
 SOON
 
 ---
-#📜 License
+# 📜 License
 
 MIT
 
