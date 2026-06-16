@@ -91,7 +91,8 @@ py main.py
 ```
 ---
 
-# 📂 Project Structure
+#📂 Project Structure
+
 src/
 ├── neuron.py
 ├── layer.py
