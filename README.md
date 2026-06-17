@@ -1,22 +1,9 @@
 # 🧠 Neural Network From Scratch With Visuals
 
-A fully from-scratch neural network framework built with Python and NumPy.
+A fully from-scratch neural network framework built with Python and NumPy and some visualizations.
 
 The purpose of this project is to understand how neural networks work internally by
 implementing the core mathematics manually and visualizing the training process.
-
-No PyTorch / TensorFlow neural network engine is used.
-
-The project includes:
-
-- Neurons
-- Layers
-- Forward propagation
-- Backpropagation
-- Gradient calculation
-- Loss calculation
-- Gradient descent
-- Training visualization
 
 ---
 
@@ -65,7 +52,7 @@ The application visualizes:
 - Live neuron outputs
 - Decision boundaries
 - Loss curve
-
+- changable data sets
 
 ![gui](assets/gui.jpg)
 ![gui2](assets/gui2.jpg)
@@ -103,7 +90,6 @@ src/
 ├── BackPropagation.py
 └── app.py
 ```
-
 ---
 
 # ⚙️ How It Works
@@ -144,27 +130,12 @@ Gradients are used to update weights and reduce error.
 
 Coming soon...
 
-The notes will cover:
-
-- Forward propagation mathematics
-- Activation functions
-- Loss functions
-- Chain rule
-- Backpropagation derivation
-- Gradient descent
 
 ---
 
-# 🔮 Future Improvements
 
-- Adam optimizer
-- Mini-batch training
-- Model saving/loading
-- More datasets
-- Better visualization
-
----
 
 # 📜 License
-
+Tnx for MIT university for helping and guiding me as an ml/ai reasercher and i hope to help other 
+reaserchers at their journey
 MIT
