@@ -21,10 +21,12 @@ import os
 #importing src folder 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
+
+libraries=["numpy","PyQt6",]
 #checking if user has dependecies
 def check_deps():
     missing = []
-    for pkg in ("PyQt6", "numpy"):
+    for pkg in libraries:
         try:
             __import__(pkg)
         except ImportError:
