@@ -67,8 +67,8 @@ The application visualizes:
 - Loss curve
 
 
-![gui](assets/gui.png)
-![gui2](assets/gui2.png)
+![gui](assets/gui.jpg)
+![gui2](assets/gui2.jpg)
 
 ---
 
@@ -106,16 +106,16 @@ src/
 
 # ⚙️ How It Works
 #1. Forward Propagation:
-![forward](assets\Forward Propagation.jpg)
+![forward](assets/Forward Propagation.jpg)
 
 # 📉 Loss Calculation
-![loss](assets\Loss.jpg)
+![loss](assets/Loss.jpg)
 
 # 🔁 Backpropagation
-![back](assets\Backpropagation.jpg)
+![back](assets/Backpropagation.jpg)
 
 # 📈 Gradient Descent
-![Gradient](assets\Gradient Descent.jpg)
+![Gradient](assets/Gradient Descent.jpg)
 
 ---
 # 📚 Mathematics Notes
