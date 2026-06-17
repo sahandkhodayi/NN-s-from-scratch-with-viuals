@@ -93,6 +93,7 @@ py main.py
 
 # 📂 Project Structure
 
+```text
 src/
 ├── neuron.py
 ├── layer.py
@@ -101,28 +102,69 @@ src/
 ├── derivative.py
 ├── BackPropagation.py
 └── app.py
+```
 
 ---
 
 # ⚙️ How It Works
-#1. Forward Propagation:
-![forward](assets/Forward Propagation.jpg)
 
-# 📉 Loss Calculation
-![loss](assets/Loss.jpg)
+## 1. Forward Propagation
 
-# 🔁 Backpropagation
-![back](assets/Backpropagation.jpg)
+Information moves through the network from input to output.
 
-# 📈 Gradient Descent
-![Gradient](assets/Gradient Descent.jpg)
+![Forward Propagation](assets/Forward%20Propagation.jpg)
 
 ---
+
+## 2. Loss Calculation
+
+The network compares the prediction with the expected output.
+
+![Loss](assets/Loss.jpg)
+
+---
+
+## 3. Backpropagation
+
+The error travels backwards through the network using the chain rule.
+
+![Backpropagation](assets/Backpropagation.jpg)
+
+---
+
+## 4. Gradient Descent
+
+Gradients are used to update weights and reduce error.
+
+![Gradient Descent](assets/Gradient%20Descent.jpg)
+
+---
+
 # 📚 Mathematics Notes
-SOON
+
+Coming soon...
+
+The notes will cover:
+
+- Forward propagation mathematics
+- Activation functions
+- Loss functions
+- Chain rule
+- Backpropagation derivation
+- Gradient descent
 
 ---
+
+# 🔮 Future Improvements
+
+- Adam optimizer
+- Mini-batch training
+- Model saving/loading
+- More datasets
+- Better visualization
+
+---
+
 # 📜 License
 
 MIT
-
