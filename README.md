@@ -7,8 +7,6 @@ implementing the core mathematics manually and visualizing the training process.
 
 ---
 
-# ✨ Features
-
 ## 🧠 Neural Network Engine
 
 Implemented from scratch:
@@ -138,4 +136,3 @@ Coming soon...
 # 📜 License
 Tnx for MIT university for helping and guiding me as an ml/ai reasercher and i hope to help other 
 reaserchers at their journey
-MIT
