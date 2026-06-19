@@ -134,5 +134,5 @@ Coming soon...
 
 
 # 📜 License
-Tnx for MIT university for helping and guiding me as an ml/ai reasercher and i hope to help other 
+Tnx  MIT university for helping and guiding me as an ml/ai reasercher and i hope to help other 
 reaserchers at their journey
