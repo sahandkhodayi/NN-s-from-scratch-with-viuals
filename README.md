@@ -132,6 +132,7 @@ Coming soon...
 ---
 # ✅ Check List
 1- Using tensors and linear algebra applications in my code.
+
 2- adding c/c++ for more optimizations and faster learning for my scratch NN.
 
 
