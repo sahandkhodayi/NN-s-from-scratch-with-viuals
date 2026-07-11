@@ -1,3 +1,5 @@
+## ⭐ big update in August 1st
+
 # 🧠 Neural Network From Scratch With Visuals
 
 A fully from-scratch neural network framework built with Python and NumPy and some visualizations.
